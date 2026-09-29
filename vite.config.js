@@ -10,25 +10,30 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.svg', 'icons.svg'],
       manifest: {
-        name: 'Mi App Vue PWA',
-        short_name: 'VuePWA',
-        description: 'Proyecto Vue 3 con Vite, Tailwind y PWA',
+        name: 'El Rayo - Precios',
+        short_name: 'ElRayo',
+        description: 'App de consulta de precios, escáner QR y carrito',
         theme_color: '#ffffff',
+        background_color: '#ffffff',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: '/icons.svg',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/svg+xml'
           },
           {
-            src: 'pwa-512x512.png',
+            src: '/favicon.svg',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/svg+xml'
           }
-        ]
+        ],
+        display: 'standalone',
+        orientation: 'any',
+        scope: '/',
+        start_url: '/'
       }
-    })    
+    })
   ],
 })
