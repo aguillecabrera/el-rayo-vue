@@ -3,8 +3,27 @@
     <!-- Header -->
     <header class="bg-white shadow px-4 py-3 flex items-center justify-between">
       <h1 class="text-lg font-bold text-gray-800">El Rayo</h1>
-      <button @click="openConfig = true" class="text-gray-500 hover:text-gray-700 text-xl">⚙️</button>
+      <div class="flex items-center gap-2">
+        <!-- Botón de instalación (solo cuando esté disponible) -->
+        <button
+          v-if="installPrompt && !esIOS"
+          @click="instalarApp"
+          class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-full shadow"
+        >
+          📲 Instalar
+        </button>
+        <button @click="openConfig = true" class="text-gray-500 hover:text-gray-700 text-xl">⚙️</button>
+      </div>
     </header>
+
+    <!-- Mensaje instructivo para iOS -->
+    <div
+      v-if="!installPrompt && esIOS && !pwaInstalada"
+      class="px-4 py-2 bg-yellow-100 text-yellow-800 text-xs flex items-center justify-between"
+    >
+      <span>📱 Para instalar, tocá Compartir (📤) y "Agregar a pantalla de inicio"</span>
+      <button @click="pwaInstalada = true" class="ml-2 font-bold">✕</button>
+    </div>
 
     <!-- Estado de la BD -->
     <div class="px-4 py-2 text-xs text-gray-500 bg-gray-100 flex items-center justify-between">
@@ -44,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref, provide } from 'vue'
+import { ref, provide, onMounted } from 'vue'
 import BarraBusqueda from './BarraBusqueda.vue'
 import ListaProductos from './ListaProductos.vue'
 import ModalEscaneo from './ModalEscaneo.vue'
@@ -64,17 +83,49 @@ const productoSeleccionado = ref(null)
 const showCarrito = ref(false)
 const openConfig = ref(false)
 
-// Escuchar eventos de recarga de datos (desde Configuracion)
-window.addEventListener('db-updated', () => {
+// Variables para instalación PWA
+const installPrompt = ref(null)
+const esIOS = ref(false)
+const pwaInstalada = ref(false) // para ocultar el mensaje iOS si ya lo cerraron
+
+onMounted(() => {
+  // Detectar iOS
+  esIOS.value = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
+
+  // Capturar evento de instalación
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault()
+    installPrompt.value = e
+  })
+
+  // Cuando la app se instala
+  window.addEventListener('appinstalled', () => {
+    installPrompt.value = null
+    pwaInstalada.value = true
+  })
+
+  // Escuchar eventos de recarga de datos (desde Configuracion)
+  window.addEventListener('db-updated', actualizarContadores)
+
   actualizarContadores()
 })
+
+function instalarApp() {
+  if (!installPrompt.value) return
+  installPrompt.value.prompt()
+  installPrompt.value.userChoice.then((choice) => {
+    if (choice.outcome === 'accepted') {
+      console.log('App instalada')
+    }
+    installPrompt.value = null
+  })
+}
 
 function abrirScanner() {
   showScanner.value = true
 }
 
 function onProductoEscaneado(producto) {
-  // Cerrar scanner y abrir modal producto
   showScanner.value = false
   productoSeleccionado.value = producto
 }
@@ -90,7 +141,6 @@ function abrirCarrito() {
 function agregarAlCarrito({ producto, cantidad }) {
   carrito.agregarProducto(producto, cantidad)
   productoSeleccionado.value = null
-  // Opcional: mostrar toast
 }
 
 async function actualizarContadores() {
@@ -105,9 +155,6 @@ async function actualizarContadores() {
   }
 }
 
-actualizarContadores()
-
 // Recargar contadores cada 30s
 setInterval(actualizarContadores, 30000)
-
 </script>
