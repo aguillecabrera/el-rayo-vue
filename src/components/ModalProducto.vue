@@ -3,14 +3,21 @@
     <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6">
       <h2 class="text-lg font-bold mb-2">{{ producto.descripcion }}</h2>
       <p class="text-sm text-gray-500 mb-1">Código: {{ producto.id }}</p>
-      <p class="text-2xl font-bold text-green-700 mb-4">$ {{ formatearPrecio(producto.precio) }}</p>
+      <p class="text-sm text-gray-500 mb-1">Proveedor: {{ producto.proveedor }}</p>
+      <div class="mb-4">
+        <p class="text-2xl font-bold text-green-700">$ {{ formatearPrecio(producto.precio_vta) }}</p>
+        <p class="text-sm text-gray-500">
+          Costo: $ {{ formatearPrecio(producto.precio_cpra) }} 
+          ({{ calcularMargen(producto.precio_cpra, producto.precio_vta) }}% margen)
+        </p>
+      </div>
 
       <div class="flex items-center gap-4 mb-4">
         <button @click="decrementar" class="w-10 h-10 rounded-full bg-gray-200 text-xl font-bold">−</button>
         <input v-model.number="cantidad" type="number" min="1" class="w-16 text-center border rounded-lg text-lg" />
         <button @click="incrementar" class="w-10 h-10 rounded-full bg-gray-200 text-xl font-bold">+</button>
       </div>
-      <p class="text-right text-lg font-semibold">Subtotal: $ {{ formatearPrecio(producto.precio * cantidad) }}</p>
+      <p class="text-right text-lg font-semibold">Subtotal: $ {{ formatearPrecio(producto.precio_vta * cantidad) }}</p>
 
       <div class="flex gap-3 mt-6">
         <button @click="$emit('agregar', { producto, cantidad })" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium">Agregar al Carrito 🛒</button>
@@ -39,5 +46,11 @@ function decrementar() {
 
 function formatearPrecio(val) {
   return val.toFixed(2).replace('.', ',')
+}
+
+function calcularMargen(precioCpra, precioVta) {
+  if (precioCpra === 0) return 0
+  const margen = ((precioVta - precioCpra) / precioCpra) * 100
+  return margen.toFixed(1)
 }
 </script>
