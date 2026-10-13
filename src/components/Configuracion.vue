@@ -56,23 +56,36 @@ async function importarArchivo(event) {
     const data = await file.arrayBuffer()
     const workbook = XLSX.read(data, { type: 'array' })
     const sheet = workbook.Sheets[workbook.SheetNames[0]]
-    const json = XLSX.utils.sheet_to_json(sheet, { header: 1 })
-
-    // Asume primera fila como headers: id, descripcion, precio, categoria, unidad
-    const headers = json[0]
-    const rows = json.slice(1)
+    const rows = XLSX.utils.sheet_to_json(sheet)
 
     const productosImportar = []
     for (const row of rows) {
-      if (!row[0] || !row[1] || !row[2]) continue // saltear filas sin datos esenciales
-      const producto = {
-        id: String(row[0]).trim(),
-        descripcion: String(row[1]).trim(),
-        precio: parseFloat(String(row[2]).replace(',', '.')) || 0,
-        categoria: row[3] ? String(row[3]).trim() : '',
-        unidad: row[4] ? String(row[4]).trim() : '',
-        ultimaModificacion: new Date().toISOString()
+      if (!row.id || !row.descripcion) continue
+
+      const precioVta = parseFloat(String(row.precio_vta ?? '').replace(',', '.')) || 0
+
+      let ultimaModificacion = new Date().toISOString()
+      if (row.ultimaModificacion) {
+        const fecha = new Date(row.ultimaModificacion)
+        if (!isNaN(fecha)) ultimaModificacion = fecha.toISOString()
       }
+
+      const producto = {
+        id: String(row.id).trim(),
+        cantidad_cpra: Number(row.cantidad_cpra) || 0,
+        codigo: row.codigo ? String(row.codigo).trim() : '',
+        descripcion: String(row.descripcion).trim(),
+        precio_cpra: parseFloat(String(row.precio_cpra ?? '').replace(',', '.')) || 0,
+        descuento_cpra: parseFloat(String(row.descuento_cpra ?? '').replace(',', '.')) || 0,
+        precio_vta: parseFloat(String(row.precio_vta ?? '').replace(',', '.')) || 0,
+        // Se conserva "precio" para que el carrito y el resto de la app sigan funcionando
+        precio: parseFloat(String(row.precio_vta ?? '').replace(',', '.')) || 0,
+        proveedor: row.proveedor ? String(row.proveedor).trim() : '',
+        categoria: row.categoria ? String(row.categoria).trim() : '',
+        unidad: row.unidad ? String(row.unidad).trim() : '',
+        ultimaModificacion
+      }
+
       productosImportar.push(producto)
     }
 
@@ -86,7 +99,18 @@ async function importarArchivo(event) {
         if (modoImportacion.value === 'merge') {
           const existente = await db.productos.get(prod.id)
           if (existente) {
-            await db.productos.update(prod.id, { precio: prod.precio, descripcion: prod.descripcion, categoria: prod.categoria, unidad: prod.unidad, ultimaModificacion: prod.ultimaModificacion })
+            await db.productos.update(prod.id, {
+              cantidad_cpra: prod.cantidad_cpra,
+              codigo: prod.codigo,
+              descripcion: prod.descripcion,
+              precio_cpra: prod.precio_cpra,
+              precio_vta: prod.precio_vta,
+              precio: prod.precio_vta,
+              proveedor: prod.proveedor,
+              categoria: prod.categoria,
+              unidad: prod.unidad,
+              ultimaModificacion: prod.ultimaModificacion
+            })
           } else {
             await db.productos.add(prod)
           }

@@ -1,0 +1,43 @@
+Sobre este proyecto, necesito hacer los siguientes cambios:
+1-Necesito cambiar la interface:
+interface Producto {
+  id: string;                  // Código único / SKU (Contenido dentro del QR). Clave primaria.
+  descripcion: string;         // Nombre / Descripción del producto
+  precio: number;              // Precio unitario numérico (flotante)
+  categoria?: string;          // Opcional: Categoria / Rubro
+  unidad?: string;             // Opcional: Unidad, Kg, Litro, etc.
+  ultimaModificacion?: string; // Timestamp de actualización ISO 8601
+}
+por esta nueva interface
+interface Producto {
+  id: string;                  // Código único / SKU (Contenido dentro del QR). Clave primaria.
+	codigo: string;							// Código del proveedor
+  cantidad_cpra //cantidad comprada
+  descripcion: string;         // Nombre / Descripción del producto
+  precio_cpra: number;              // Precio unitario numérico de compra (flotante)
+  precio_vta: number;              // Precio unitario numérico de venta (flotante)
+  proveedor: string;          // Proveedor del producto
+  categoria?: string;          // Opcional: Categoria / Rubro
+  unidad?: string;             // Opcional: Unidad, Kg, Litro, etc.
+  ultimaModificacion?: string; // Timestamp de actualización ISO 8601
+}
+
+2-La importación del archivo excel/cvs, va a contener todos los datos correspondientes a la interface Producto,
+se va a suministrar:
+id, cantidad_cpra, codigo, descripcion, precio_cpra, precio_vta, proveedor, categoria, unidad y ultimaModificacion
+
+3-Componente ListaProducto.vue
+En cada linea debe mostrar:
+En una linea un badge con el "id" del producto y otra badge con el "proveedor"
+Continuar mostrando la descripcion
+Como precio, debe mostrar el precio de venta (Producto.precio_vta)
+
+4-Componente ListaProducto.vue
+Junto al ingreso del "producto que se busca", debe permitir indicar el proveedor sobre el cual se realiza la busqueda, los valores posibles son:
+Proveedor: Domfer, Gfp, Venti, Tornillo, Rayo, Todos
+Con la búsqueda del Producto se debe filtrar el proveedor, notar que existe la posiblidad de indicar "todos" los proveedor.
+La opción "Todos" es la opción por defecto
+
+5-Componente ModalProducto.vue
+Junto al código, debe mostrar el interface.proveedor
+Como precio en verde, debe motrar el Producto.precio_vta, debajo y en una fuente menor, debe mostrar el Interface.precio_cpra y entre parentesis el margen de ganancia calculado sobre el Producto.precio_cpra

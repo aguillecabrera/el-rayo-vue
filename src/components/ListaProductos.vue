@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col h-full">
-    <!-- Filtros -->
+    <!-- Filtros
     <div class="px-4 py-2 bg-gray-50 border-b">
       <div class="flex gap-2 mb-2">
         <input 
@@ -22,7 +22,7 @@
         </select>
       </div>
     </div>
-
+     -->
     <!-- Lista de productos -->
     <div class="flex-1 overflow-y-auto px-4 py-2 space-y-2">
       <div
@@ -54,12 +54,21 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { db } from '../db.js'
 
+const props = defineProps({
+  busqueda: {
+    type: String,
+    default: ''
+  },
+  proveedor: {
+    type: String,
+    default: 'Todos'
+  }
+})
+
 defineEmits(['producto-seleccionado'])
 
 const productos = ref([])
 const cargando = ref(true)
-const terminoBusqueda = ref('')
-const proveedorSeleccionado = ref('Todos')
 
 onMounted(async () => {
   await cargarProductos()
@@ -80,8 +89,8 @@ async function cargarProductos() {
 const productosFiltrados = computed(() => {
   let filtrados = productos.value
 
-  // Filtrar por término de búsqueda
-  const term = terminoBusqueda.value.toLowerCase().trim()
+  // Filtrar por término de búsqueda (prop)
+  const term = props.busqueda.toLowerCase().trim()
   if (term) {
     filtrados = filtrados.filter(p =>
       p.id.toLowerCase().includes(term) ||
@@ -90,9 +99,9 @@ const productosFiltrados = computed(() => {
     )
   }
 
-  // Filtrar por proveedor
-  if (proveedorSeleccionado.value !== 'Todos') {
-    filtrados = filtrados.filter(p => p.proveedor === proveedorSeleccionado.value)
+  // Filtrar por proveedor (prop)
+  if (props.proveedor !== 'Todos') {
+    filtrados = filtrados.filter(p => p.proveedor === props.proveedor)
   }
 
   return filtrados

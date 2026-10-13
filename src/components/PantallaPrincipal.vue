@@ -32,10 +32,18 @@
     </div>
 
     <!-- Barra búsqueda -->
-    <BarraBusqueda v-model="terminoBusqueda" />
+    <BarraBusqueda
+      v-model="terminoBusqueda"
+      :proveedor="proveedorSeleccionado"
+      @update:proveedor="proveedorSeleccionado = $event"
+    />
 
     <!-- Lista productos -->
-    <ListaProductos :termino="terminoBusqueda" @producto-seleccionado="abrirModalProducto" />
+    <ListaProductos
+      :busqueda="terminoBusqueda"
+      :proveedor="proveedorSeleccionado"
+      @producto-seleccionado="abrirModalProducto"
+    />
 
     <!-- Botones flotantes -->
     <div class="fixed bottom-6 right-4 flex flex-col gap-3 z-40">
@@ -76,6 +84,7 @@ const carrito = zustandCarrito()
 provide('carrito', carrito)
 
 const terminoBusqueda = ref('')
+const proveedorSeleccionado = ref('Todos')
 const productosCount = ref(0)
 const ultimaActualizacion = ref('')
 const showScanner = ref(false)
